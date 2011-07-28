@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache-config SYSTEM "cache-config.dtd">
+ 
+<cache-config>
+  <caching-scheme-mapping>
+    <cache-mapping>
+      <cache-name>*</cache-name>
+      <scheme-name>dist-default</scheme-name>
+    </cache-mapping>
+  </caching-scheme-mapping>
+ 
+  <caching-schemes>
+    <distributed-scheme>
+	<serializer>
+	  <class-name>com.tangosol.io.pof.ConfigurablePofContext</class-name>
+	</serializer>
+      <scheme-name>dist-default</scheme-name>
+      <lease-granularity>member</lease-granularity>
+      <backing-map-scheme>
+        <local-scheme/>
+      </backing-map-scheme>
+      <autostart>true</autostart>
+    </distributed-scheme>
+    
+    <proxy-scheme>
+      <service-name>ExtendTcpProxyService</service-name>
+      <thread-count>5</thread-count>
+      <acceptor-config>
+        <tcp-acceptor>
+          <local-address>
+            <address system-property="tangosol.coherence.extend.address">localhost</address>
+            <port system-property="tangosol.coherence.extend.port">9099</port>
+	    <reuse-address>true</reuse-address>
+          </local-address>
+        </tcp-acceptor>
+      </acceptor-config>
+      <autostart>true</autostart>
+    </proxy-scheme>
+  </caching-schemes>
+</cache-config>

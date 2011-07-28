@@ -9,7 +9,7 @@
 JAVA_HOME=/usr/lib/jvm/java-6-sun
 
 # location of Coherence Java and C++ installations
-COHERENCE_HOME=/opt/coherence3.6.1
+COHERENCE_HOME=/opt/coherence
 COHERENCE_HOME_CPP=/opt/coherence-cpp
 
 CLASSPATH=$CLASSPATH:$COHERENCE_HOME/lib/coherence.jar
@@ -18,7 +18,7 @@ mkdir -p $DIR/log
 
 # start the cache
 echo -n Starting cache... 
-$JAVA_HOME/bin/java -cp $CLASSPATH -Dtangosol.coherence.cacheconfig=$DIR/server-cache-config.xml -Dtangosol.coherence.log=$DIR/log/cache-server.log com.tangosol.net.DefaultCacheServer &
+$JAVA_HOME/bin/java -cp $CLASSPATH -Dtangosol.coherence.log=$DIR/log/cache-server.log com.tangosol.net.DefaultCacheServer &
 CACHE_PID=$!
 echo done!
 # give it a chance to stabilize
@@ -27,11 +27,7 @@ sleep 1
 
 # start the proxy
 echo -n Starting proxy... 
-$JAVA_HOME/bin/java -cp $CLASSPATH \
--Dtangosol.coherence.cacheconfig=$DIR/server-cache-config.xml \
--Dtangosol.coherence.extend.enabled=true \
--Dtangosol.coherence.log=$DIR/log/cache-proxy.log \ 
-com.tangosol.net.DefaultCacheServer &
+$JAVA_HOME/bin/java -cp $CLASSPATH -Dtangosol.coherence.cacheconfig=$DIR/coherence-proxy-config.xml -Dtangosol.coherence.extend.enabled=true -Dtangosol.coherence.log=$DIR/log/cache-proxy.log com.tangosol.net.DefaultCacheServer &
 PROXY_PID=$!
 echo done! 
 
