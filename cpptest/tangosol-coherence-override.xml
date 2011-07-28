@@ -1,0 +1,8 @@
+<coherence>
+  <logging-config>
+    <destination>log/cpptest.log</destination>
+    <severity-level>5</severity-level>
+    <message-format>(thread={thread}): {text}</message-format>
+    <character-limit>8192</character-limit>
+  </logging-config>
+</coherence>

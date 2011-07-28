@@ -26,6 +26,9 @@
       <service-name>ExtendTcpProxyService</service-name>
       <thread-count>5</thread-count>
       <acceptor-config>
+	<serializer>
+          <class-name>com.tangosol.io.pof.ConfigurablePofContext</class-name>
+        </serializer>
         <tcp-acceptor>
           <local-address>
             <address system-property="tangosol.coherence.extend.address">localhost</address>
