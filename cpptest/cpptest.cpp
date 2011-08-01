@@ -11,24 +11,17 @@ using coherence::net::NamedCache;
 
 int main(int argc, char** argv) {
   try {
-    std::cout << "Connecting to grid... ";
     String::View vsCacheName = "mycache";
     NamedCache::Handle hCache = CacheFactory::getCache(vsCacheName);
-    std::cout << "done! Cache name is " << hCache->getCacheName()  << std::endl;
     
-    std::cout << "Inserting one key-value pair... ";
-    String::View vsKey = "Name";
-    String::View vsVal = "Gaius";
+    String::View vsKey = "If you can see this, ";
+    String::View vsVal = "your environment is basically sane.";
     hCache->put(vsKey, vsVal);
-    std::cout << "done!" << std::endl;
     
-    std::cout << "Querying the cache...";
     String::View vsGet = cast<String::View>(hCache->get(vsKey));
-    std::cout << "done! Value was " << vsGet << std::endl;
+    std::cout << "*** " << vsKey << vsGet << " ***" << std::endl;
   
-    std::cout << "Disconnecting... ";
     CacheFactory::shutdown();
-    std::cout << "done!" << std::endl;
     
     return 0;
   } catch (const std::exception& e) {

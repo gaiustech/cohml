@@ -1,0 +1,20 @@
+Cpptest is the simplest possible program to verify that the environment
+is sane. It assumes that Coherence Java is in /opt/coherence and Coherence
+C++ is in /opt/coherence-cpp, (on my system these are symlinks) and that 
+the JDK package from Debian is used. These are set in environment variables 
+in the scripts, e.g. COHERENCE_HOME, JAVA_HOME etc etc. 
+
+To use:
+
+1) In the directory ../server, edit the file start-coh.sh if necessary and run
+   it. This will start a Cache server (Coherence itself) and a Proxy server (an
+   endpoint for C++ clients to connect to)
+
+2) In this directory, edit the Makefile if necessary, make, and run ./cpptest.
+   You may also need to set LD_LIBRARY_PATH=/opt/coherence-cpp/lib.
+
+3) If it completes successfully, then Coherence is OK and work may proceed. 
+
+4) If not then, ermm, good luck...
+
+
