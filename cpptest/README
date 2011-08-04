@@ -8,7 +8,7 @@ To use:
 
 1) In the directory ../server, edit the file start-coh.sh if necessary and run
    it. This will start a Cache server (Coherence itself) and a Proxy server (an
-   endpoint for C++ clients to connect to)
+   endpoint for C++ clients to connect to). Wait 10 seconds for it to stabilize.
 
 2) In this directory, edit the Makefile if necessary, make, and run ./cpptest.
    You may also need to set LD_LIBRARY_PATH=/opt/coherence-cpp/lib.

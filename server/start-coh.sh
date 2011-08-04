@@ -34,7 +34,7 @@ echo done!
 echo "kill $CACHE_PID $PROXY_PID" >stop-coh.sh
 chmod ug+x stop-coh.sh
 
-echo Wrote stop-coh.sh to kill Cache and Proxy
+echo Wrote stop-coh.sh to kill Cache and Proxy. Wait 10 seconds for it to stabilize.
 
 #echo Starting console. Enter \"bye\" to exit
 #$JAVA_HOME/bin/java -cp $CLASSPATH -Dtangosol.coherence.log=$DIR/log/console.log -Dtangosol.coherence.cacheconfig=server-cache-config.xml -jar $COHERENCE_HOME/lib/coherence.jar
