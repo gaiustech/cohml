@@ -5,11 +5,11 @@ CCFLAGS=-ccopt -I/usr/lib/ocaml -ccopt -I$(COH_HOME_CPP)/include -ccopt -Wall
 COBJS=cohml.o
 MLOBJS=cohml.cmo
 
-cohml:	$(COBJS) $(MLOBJS)
+cohmlsh:	$(COBJS) $(MLOBJS)
 	ocamlmktop -g -custom -o $@ -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence unix.cma $(MLOBJS) $(COBJS)
 
 %.o:	%.c %.h
-	g++ -g3 -c -o $@ -I$(COH_HOME_CPP)/include -I/usr/lib/ocaml -L$(COH_HOME_CPP)/lib -lcoherence $<
+	ocamlc -ccopt -xc++ -ccopt -g3 -c -o $@ -ccopt -I$(COH_HOME_CPP)/include -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence $<
 
 %.cmo: %.ml
 	ocamlc -c -g unix.cma $<

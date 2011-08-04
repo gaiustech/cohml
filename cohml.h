@@ -14,6 +14,7 @@ class Cohml {
 private:
   NamedCache::Handle hCache;
   String::View vsRet; // to keep the C string in scope
+  std::ostringstream msg; // debug messages
 public:
   Cohml(char* cn);
   void put(char* k, char* v);
