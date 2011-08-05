@@ -10,6 +10,7 @@ extern "C" {
 #include "coherence/lang.ns"
 #include "coherence/net/CacheFactory.hpp"
 #include "coherence/net/NamedCache.hpp"
+#include "coherence/lang/Exception.hpp"
 #include <iostream>
 #include <sstream>
 #include "cohml.h"
@@ -23,6 +24,7 @@ using std::ostringstream;
 
 #define Cohml_val(v)   (*((Cohml**)       Data_custom_val(v)))
 #define DEBUG
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 
 // Using C to interact with OCaml
 extern "C" {
@@ -35,13 +37,29 @@ extern "C" {
   }
   
   /* kick an error back into OCaml-land */
-  void raise_caml_exception(int exception_code, char* exception_string) {
+  void raise_caml_exception(Exception::View ce) {
     CAMLlocal1(e);
     e = caml_alloc_tuple(2);
-    Store_field(e, 0, Val_long(exception_code));
-    Store_field(e, 1, caml_copy_string(exception_string));
+    Store_field(e, 0, caml_copy_string((ce->getName())->getCString()));
+    Store_field(e, 1, caml_copy_string((ce->getDescription())->getCString()));
     caml_raise_with_arg(*caml_named_value("Coh_exception"), e);
-  }  
+  }
+
+  static struct custom_operations coh_custom_ops = {"coh_custom_ops", NULL, NULL, NULL, NULL, NULL};
+
+  value caml_coh_getcache(value cn) {
+    CAMLparam1(cn);
+    char* cache_name = String_val(cn);
+    Cohml* c;
+    try {
+      c = new Cohml(cache_name);
+    } catch (Exception::View ce) {
+      raise_caml_exception(ce);
+    }
+    value v = caml_alloc_custom(&coh_custom_ops, sizeof(Cohml*), 0, 1);
+    Cohml_val(v) = c;
+    CAMLreturn(v);
+  }
 } // extern C
 
 // Using C++ to interact with Coherence
