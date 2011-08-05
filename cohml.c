@@ -23,7 +23,7 @@ using std::cerr;
 using std::ostringstream;
 
 #define Cohml_val(v)   (*((Cohml**)       Data_custom_val(v)))
-#define DEBUG
+//#define DEBUG
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 // Using C to interact with OCaml
@@ -41,7 +41,7 @@ extern "C" {
     CAMLlocal1(e);
     e = caml_alloc_tuple(2);
     Store_field(e, 0, caml_copy_string((ce->getName())->getCString()));
-    Store_field(e, 1, caml_copy_string((ce->getDescription())->getCString()));
+    Store_field(e, 1, caml_copy_string((ce->getMessage())->getCString()));
     caml_raise_with_arg(*caml_named_value("Coh_exception"), e);
   }
 
@@ -85,9 +85,14 @@ extern "C" {
     CAMLparam2(co, k);
     Cohml* c = Cohml_val(co);
     char* key = String_val(k);
-
-    const char* val = c->getCString(key);
-    CAMLreturn(caml_copy_string(val));
+    
+    try {
+      const char* val = c->getCString(key);
+      CAMLreturn(caml_copy_string(val));
+    } catch (Exception::View ce) {
+      raise_caml_exception(ce);
+    }
+    CAMLreturn(caml_copy_string("")); //should never get here
   }
 
 } // extern C
