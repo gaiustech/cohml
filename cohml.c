@@ -47,6 +47,7 @@ extern "C" {
 
   static struct custom_operations coh_custom_ops = {"coh_custom_ops", NULL, NULL, NULL, NULL, NULL};
 
+  // connect to Coherence and open a named cache
   value caml_coh_getcache(value cn) {
     CAMLparam1(cn);
     char* cache_name = String_val(cn);
@@ -60,6 +61,35 @@ extern "C" {
     Cohml_val(v) = c;
     CAMLreturn(v);
   }
+
+  // disconnect entirely - will need a method to do this for a single cache at a time
+  value caml_coh_shutdown(value co) {
+    CAMLparam1(co);
+    Cohml* c = Cohml_val(co);
+    delete (c);
+    CAMLreturn(Val_unit);
+  }
+
+  value caml_coh_put(value co, value k, value v) {
+    CAMLparam3(co, k, v);
+    Cohml* c = Cohml_val(co);
+    char* key = String_val(k);
+    char* val = String_val(v);
+
+    c->put(key, val);
+
+    CAMLreturn(Val_unit);
+  }
+
+  value caml_coh_get(value co, value k) {
+    CAMLparam2(co, k);
+    Cohml* c = Cohml_val(co);
+    char* key = String_val(k);
+
+    const char* val = c->getCString(key);
+    CAMLreturn(caml_copy_string(val));
+  }
+
 } // extern C
 
 // Using C++ to interact with Coherence
