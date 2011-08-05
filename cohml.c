@@ -45,6 +45,7 @@ extern "C" {
     caml_raise_with_arg(*caml_named_value("Coh_exception"), e);
   }
 
+  // operations for the OCaml GC
   static struct custom_operations coh_custom_ops = {"coh_custom_ops", NULL, NULL, NULL, NULL, NULL};
 
   // connect to Coherence and open a named cache
@@ -70,6 +71,7 @@ extern "C" {
     CAMLreturn(Val_unit);
   }
 
+  // put a key-value pair into the cache, strings only for now
   value caml_coh_put(value co, value k, value v) {
     CAMLparam3(co, k, v);
     Cohml* c = Cohml_val(co);
@@ -81,6 +83,18 @@ extern "C" {
     CAMLreturn(Val_unit);
   }
 
+  // delete a pair with a string key from the cache
+  value caml_coh_remove(value co, value k) {
+    CAMLparam2(co, k);
+    Cohml* c = Cohml_val(co);
+    char* key = String_val(k);
+    
+    c->remove(key);
+
+    CAMLreturn(Val_unit);
+  }
+
+  // get a string key-value pair from the cache - raises NullPointerException if the key does not exist
   value caml_coh_get(value co, value k) {
     CAMLparam2(co, k);
     Cohml* c = Cohml_val(co);
@@ -94,7 +108,6 @@ extern "C" {
     }
     CAMLreturn(caml_copy_string("")); //should never get here
   }
-
 } // extern C
 
 // Using C++ to interact with Coherence
@@ -112,6 +125,15 @@ void Cohml::put(char* k, char* v) {
 #endif
 }
   
+void Cohml::remove(char* k) {
+  String::View vsKey = k; 
+  hCache->remove(vsKey);
+#ifdef DEBUG
+  msg << __func__ << ": Removed key=" << vsKey;
+  debug(msg.str().c_str());
+#endif
+}
+
 const char* Cohml::getCString(char* k) {
   String::View vsKey = k;
   vsRet = cast<String::View>(hCache->get(vsKey));

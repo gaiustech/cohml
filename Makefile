@@ -7,6 +7,7 @@ MLOBJS=cohml.cmo
 
 cohmlsh:	$(COBJS) $(MLOBJS)
 	ocamlmktop -g -custom -o $@ -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence unix.cma $(MLOBJS) $(COBJS)
+	mkdir -p log
 
 %.o:	%.c %.h
 	ocamlc -ccopt -xc++ -ccopt -g3 -c -o $@ -ccopt -I$(COH_HOME_CPP)/include -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence $<

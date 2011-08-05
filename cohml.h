@@ -18,6 +18,7 @@ private:
 public:
   Cohml(char* cn);
   void put(char* k, char* v);
+  void remove(char* k);
   const char* getCString(char* k);
   ~Cohml();
 };
