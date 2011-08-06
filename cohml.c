@@ -11,6 +11,8 @@ extern "C" {
 #include "coherence/net/CacheFactory.hpp"
 #include "coherence/net/NamedCache.hpp"
 #include "coherence/lang/Exception.hpp"
+#include "coherence/util/MapListener.hpp"
+#include "coherence/util/MapEvent.hpp"
 #include <iostream>
 #include <sstream>
 #include "cohml.h"
@@ -21,6 +23,8 @@ using coherence::net::NamedCache;
 using std::endl;
 using std::cerr;
 using std::ostringstream;
+using coherence::util::MapListener;
+using coherence::util::MapEvent;
 
 #define Cohml_val(v)   (*((Cohml**)       Data_custom_val(v)))
 //#define DEBUG
@@ -94,6 +98,24 @@ extern "C" {
     CAMLreturn(Val_unit);
   }
 
+  // register a maplistener (well, the maplistener, for now)
+  value caml_coh_addfilterlistener(value co) {
+    CAMLparam1(co);
+    Cohml* c = Cohml_val(co);
+
+    // check that all the callback functions are defined!
+    value* cbf_i = caml_named_value("cbf_coh_insert");
+    value* cbf_u = caml_named_value("cbf_coh_update");
+    value* cbf_d = caml_named_value("cbf_coh_delete");
+    if ( (cbf_i == NULL) || (cbf_u == NULL) || (cbf_d == NULL)) {
+      caml_raise_with_arg(*caml_named_value("Cohml_exception"), caml_copy_string("Cannot listen: callbacks not defined!"));
+    } else {
+      c->addFilterListener();
+    }
+
+    CAMLreturn(Val_unit);
+  }
+
   // get a string key-value pair from the cache - raises NullPointerException if the key does not exist
   value caml_coh_get(value co, value k) {
     CAMLparam2(co, k);
@@ -144,12 +166,42 @@ const char* Cohml::getCString(char* k) {
   return vsRet->getCString();
 }
 
+void Cohml::addFilterListener() {
+  hCache->addFilterListener(CohmlMapListener::create());
+#ifdef DEBUG
+  msg << __func__ << ": listening";
+  debug(msg.str().c_str());
+#endif
+}
+
 Cohml::~Cohml() {
 #ifdef DEBUG
   msg << __func__ << ": Disconnecting from Coherence";
   debug(msg.str().c_str());
 #endif  
   CacheFactory::shutdown();
+}
+
+// call the OCaml function cbf_coh_insert with a new key-value pair
+void CohmlMapListener::entryInserted(MapEvent::View vEvent) {
+  // TODO: stash these function pointers
+  caml_callback2(*caml_named_value("cbf_coh_insert"), 
+		 caml_copy_string(cast<String::View>(vEvent->getKey())->getCString()), 
+		 caml_copy_string(cast<String::View>(vEvent->getNewValue())->getCString()));
+}
+
+// call the OCaml function cbf_coh_update with the key, the previous value and the new value
+void CohmlMapListener::entryUpdated(MapEvent::View vEvent) {
+  caml_callback3(*caml_named_value("cbf_coh_update"), 
+		 caml_copy_string(cast<String::View>(vEvent->getKey())->getCString()),  
+		 caml_copy_string(cast<String::View>(vEvent->getOldValue())->getCString()), 
+		 caml_copy_string(cast<String::View>(vEvent->getNewValue())->getCString()));
+}
+
+// call the OCaml function cb_coh_delete with the key just removed from the cache
+void CohmlMapListener::entryDeleted(MapEvent::View vEvent) {
+  caml_callback(*caml_named_value("cbf_coh_delete"), 
+		caml_copy_string(cast<String::View>(vEvent->getKey())->getCString()));
 }
 
 // End of file

@@ -1,1 +1,8 @@
-COH*ML: Ocaml bindings for Coherence. Very experimental. Implements connecting to a cache, then put/get of string key-value pairs only so far.
+COH*ML: Ocaml bindings for Coherence. Very experimental. 
+
+Implements:
+	- connecting to a cache
+	- put/get of string key-value pairs only so far.
+	- listen for events (ditto)
+
+See blog at http://gaiustech.wordpress.com/ for more details.

@@ -9,6 +9,9 @@ cohmlsh:	$(COBJS) $(MLOBJS)
 	ocamlmktop -g -custom -o $@ -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence unix.cma $(MLOBJS) $(COBJS)
 	mkdir -p log
 
+listener:	$(COBJS) $(MLOBJS) listener.ml
+	ocamlc -g -custom -o $@ -cclib -L$(COH_HOME_CPP)/lib -cclib -lcoherence unix.cma $(MLOBJS) listener.ml $(COBJS)
+
 %.o:	%.c %.h
 	ocamlc -ccopt -xc++ -ccopt -g3 -c -o $@ -ccopt -I$(COH_HOME_CPP)/include -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence $<
 
@@ -16,6 +19,6 @@ cohmlsh:	$(COBJS) $(MLOBJS)
 	ocamlc -c -g unix.cma $<
 
 clean:
-	rm -f *.o *.cm* *.so *.a cohml
+	rm -f *.o *.cm* *.so *.a cohml listener
 
 # End of file
