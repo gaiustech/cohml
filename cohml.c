@@ -110,7 +110,7 @@ extern "C" {
     if ( (cbf_i == NULL) || (cbf_u == NULL) || (cbf_d == NULL)) {
       caml_raise_with_arg(*caml_named_value("Cohml_exception"), caml_copy_string("Cannot listen: callbacks not defined!"));
     } else {
-      c->addFilterListener();
+      c->addFilterListener(cbf_i, cbf_u, cbf_d);
     }
 
     CAMLreturn(Val_unit);
@@ -166,8 +166,11 @@ const char* Cohml::getCString(char* k) {
   return vsRet->getCString();
 }
 
-void Cohml::addFilterListener() {
-  hCache->addFilterListener(CohmlMapListener::create());
+void Cohml::addFilterListener(value* cbf_i, value* cbf_u, value* cbf_d) {
+  TypedHandle<CohmlMapListener> cml = CohmlMapListener::create();
+  cml->cbf_insert = cbf_i; cml->cbf_update = cbf_u; cml->cbf_delete = cbf_d;
+
+  hCache->addFilterListener(cml);
 #ifdef DEBUG
   msg << __func__ << ": listening";
   debug(msg.str().c_str());
@@ -184,15 +187,14 @@ Cohml::~Cohml() {
 
 // call the OCaml function cbf_coh_insert with a new key-value pair
 void CohmlMapListener::entryInserted(MapEvent::View vEvent) {
-  // TODO: stash these function pointers
-  caml_callback2(*caml_named_value("cbf_coh_insert"), 
+  caml_callback2(*cbf_insert,
 		 caml_copy_string(cast<String::View>(vEvent->getKey())->getCString()), 
 		 caml_copy_string(cast<String::View>(vEvent->getNewValue())->getCString()));
 }
 
 // call the OCaml function cbf_coh_update with the key, the previous value and the new value
 void CohmlMapListener::entryUpdated(MapEvent::View vEvent) {
-  caml_callback3(*caml_named_value("cbf_coh_update"), 
+  caml_callback3(*cbf_update,
 		 caml_copy_string(cast<String::View>(vEvent->getKey())->getCString()),  
 		 caml_copy_string(cast<String::View>(vEvent->getOldValue())->getCString()), 
 		 caml_copy_string(cast<String::View>(vEvent->getNewValue())->getCString()));
@@ -200,7 +202,7 @@ void CohmlMapListener::entryUpdated(MapEvent::View vEvent) {
 
 // call the OCaml function cb_coh_delete with the key just removed from the cache
 void CohmlMapListener::entryDeleted(MapEvent::View vEvent) {
-  caml_callback(*caml_named_value("cbf_coh_delete"), 
+  caml_callback(*cbf_delete,
 		caml_copy_string(cast<String::View>(vEvent->getKey())->getCString()));
 }
 

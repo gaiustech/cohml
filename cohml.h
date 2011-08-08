@@ -28,13 +28,16 @@ public:
   void put(char* k, char* v);
   void remove(char* k);
   const char* getCString(char* k);
-  void addFilterListener();
+  void addFilterListener(value* cbf_i, value* cbf_u, value* cbf_d);
   ~Cohml();
 };
 
 class CohmlMapListener:public class_spec<CohmlMapListener, extends<Object>, implements<MapListener> > {
   friend class factory<CohmlMapListener>;
 public:
+  value* cbf_insert;
+  value* cbf_update;
+  value* cbf_delete;
   virtual void entryInserted(MapEvent::View vEvent);
   virtual void entryUpdated(MapEvent::View vEvent);
   virtual void entryDeleted(MapEvent::View vEvent);
