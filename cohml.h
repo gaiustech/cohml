@@ -18,6 +18,11 @@ using coherence::net::NamedCache;
 using coherence::util::MapListener;
 using coherence::util::MapEvent;
 
+extern "C" {
+  void debug(const char* msg);
+  void raise_caml_exception(Exception::View ce);
+}
+
 class Cohml {
 private:
   NamedCache::Handle hCache;
@@ -41,6 +46,23 @@ public:
   virtual void entryInserted(MapEvent::View vEvent);
   virtual void entryUpdated(MapEvent::View vEvent);
   virtual void entryDeleted(MapEvent::View vEvent);
+};
+
+class Message {
+ private:
+  const int msg_id;
+  const int msg_priority;
+  const std::string msg_subject;
+  const std::string msg_body;
+ public:
+  Message(int i, int p, const std::string& s, const std::string& b); 
+  Message(const Message& that); 
+  Message(); 
+
+  int getId() const;
+  int getPriority() const;
+  std::string getSubject() const;
+  std::string getBody() const;
 };
 
 #endif
