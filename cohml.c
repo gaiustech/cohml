@@ -124,6 +124,8 @@ extern "C" {
     try {
       const char* val = c->getCString(key);
       CAMLreturn(caml_copy_string(val));
+    } catch (NullPointerException::View npe) {
+      caml_raise_not_found();
     } catch (Exception::View ce) {
       raise_caml_exception(ce);
     }
@@ -216,11 +218,16 @@ void Cohml::put_message(Message& m) {
 #endif
 }
 
-// retrieve a message keyed by its ID - or throws NullPointerException if not found
+// retrieve a message keyed by its ID - or throws Not_found back to OCaml if not found
 const Message* Cohml::get_message(int k) {
   Integer32::View vKey = Integer32::create(k);
   Managed<Message>::View vm = cast<Managed<Message>::View>(hCache->get(vKey));
-  Message* m = new Message(vm->getId(), vm->getPriority(), vm->getSubject(), vm->getBody());
+  Message* m;
+  try {
+    m = new Message(vm->getId(), vm->getPriority(), vm->getSubject(), vm->getBody());
+  } catch (NullPointerException::View npe) {
+    caml_raise_not_found();
+  }
   return m;
 }
 

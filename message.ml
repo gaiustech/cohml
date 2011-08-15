@@ -14,6 +14,6 @@ let () =
   let test_msg = {msg_id = 1; msg_priority=3; msg_subject="test"; msg_body="hello, world!"} in
   let c = coh_getcache "message_cache" in
   coh_put_message c test_msg;
-  print_message (coh_get_message c 1);
+  print_message (coh_get_message c 2);
   
 (* end of file *)

@@ -59,6 +59,7 @@ size_t hash_value(const Message& m) {
 
 // OCaml interface
 extern "C" {
+  // create and store an object of type Message in the cache
   value caml_put_message(value co, value msg) {
     CAMLparam2(co, msg);
     Cohml* c = Cohml_val(co);
@@ -81,6 +82,7 @@ extern "C" {
     CAMLreturn(Val_unit);
   }
   
+  // fetch an object of type Message from the cache and return it to OCaml as a record
   value caml_get_message(value co, value msg_id) {
     CAMLparam2(co, msg_id);
     Cohml* c = Cohml_val(co);
