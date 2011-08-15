@@ -15,7 +15,7 @@ extern "C" {
 Message::Message(int i, int p, const std::string& s, const std::string& b) : msg_id(i), msg_priority(p), msg_subject(s), msg_body(b) {}
 
 // copy constructor required by Coherence - note tho' that there is
-// no Coherence-specific code in this file
+// no Coherence-specific code at all in this class
 Message::Message(const Message& that) : msg_id(that.msg_id), msg_priority(that.msg_priority), msg_subject(that.msg_subject), msg_body(that.msg_body) {}
 
 // zero-parameter constructor required by Coherence
@@ -59,7 +59,50 @@ size_t hash_value(const Message& m) {
 
 // OCaml interface
 extern "C" {
+  value caml_put_message(value co, value msg) {
+    CAMLparam2(co, msg);
+    Cohml* c = Cohml_val(co);
 
+    // unmarshal the record from OCaml
+    int i = Int_val(Field(msg, 0));
+    int p = Int_val(Field(msg, 1));
+    char* s = String_val(Field(msg, 2));
+    char* b = String_val(Field(msg, 3));
+
+    // create an unmanaged Message object on the stack
+    Message m(i, p, s, b);
+#ifdef DEBUG
+    std::cout <<__func__ <<": " << m << std::endl;
+#endif
+    // send this off to the Cohml class for processing - this could have been in the Message
+    // class but I wanted to keep it "pure". 
+    c->put_message(m);
+    
+    CAMLreturn(Val_unit);
+  }
+  
+  value caml_get_message(value co, value msg_id) {
+    CAMLparam2(co, msg_id);
+    Cohml* c = Cohml_val(co);
+    int i = Int_val(msg_id);
+    CAMLlocal1(mt);
+
+    // get an unmanaged, heap-allocated message back from Cohml
+    const Message* m = c->get_message(i);
+
+    // marshal this for OCaml
+    mt = caml_alloc_tuple(4);
+    Store_field(mt, 0, Val_int(m->getId()));
+    Store_field(mt, 1, Val_int(m->getPriority()));
+    Store_field(mt, 2, caml_copy_string((char*)m->getSubject().c_str()));
+    Store_field(mt, 3, caml_copy_string((char*)m->getBody().c_str()));
+
+    // clean up the returned object - don't need it anymore in C
+    delete m;
+
+    // return to OCaml
+    CAMLreturn(mt);
+  }
 }
 
 // End of file

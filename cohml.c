@@ -26,8 +26,7 @@ using std::ostringstream;
 using coherence::util::MapListener;
 using coherence::util::MapEvent;
 
-#define Cohml_val(v)   (*((Cohml**)       Data_custom_val(v)))
-//#define DEBUG
+#define DEBUG
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 // Using C to interact with OCaml
@@ -204,6 +203,25 @@ void CohmlMapListener::entryUpdated(MapEvent::View vEvent) {
 void CohmlMapListener::entryDeleted(MapEvent::View vEvent) {
   caml_callback(*cbf_delete,
 		caml_copy_string(cast<String::View>(vEvent->getKey())->getCString()));
+}
+
+// store an object of type Message in the grid
+void Cohml::put_message(Message& m) {
+  Managed<Message>::View vMessage = Managed<Message>::create(m);
+  Integer32::View vKey = Integer32::create(m.getId());
+  hCache->put(vKey, vMessage);
+#ifdef DEBUG
+  msg << __func__ << ": Put message key=" << vKey;
+  debug(msg.str().c_str());
+#endif
+}
+
+// retrieve a message keyed by its ID - or throws NullPointerException if not found
+const Message* Cohml::get_message(int k) {
+  Integer32::View vKey = Integer32::create(k);
+  Managed<Message>::View vm = cast<Managed<Message>::View>(hCache->get(vKey));
+  Message* m = new Message(vm->getId(), vm->getPriority(), vm->getSubject(), vm->getBody());
+  return m;
 }
 
 // End of file

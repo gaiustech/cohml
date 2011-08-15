@@ -18,35 +18,12 @@ using coherence::net::NamedCache;
 using coherence::util::MapListener;
 using coherence::util::MapEvent;
 
+#define Cohml_val(v)   (*((Cohml**)       Data_custom_val(v)))
+
 extern "C" {
   void debug(const char* msg);
   void raise_caml_exception(Exception::View ce);
 }
-
-class Cohml {
-private:
-  NamedCache::Handle hCache;
-  String::View vsRet; // to keep the C string in scope
-  std::ostringstream msg; // debug messages
-public:
-  Cohml(char* cn);
-  void put(char* k, char* v);
-  void remove(char* k);
-  const char* getCString(char* k);
-  void addFilterListener(value* cbf_i, value* cbf_u, value* cbf_d);
-  ~Cohml();
-};
-
-class CohmlMapListener:public class_spec<CohmlMapListener, extends<Object>, implements<MapListener> > {
-  friend class factory<CohmlMapListener>;
-public:
-  value* cbf_insert;
-  value* cbf_update;
-  value* cbf_delete;
-  virtual void entryInserted(MapEvent::View vEvent);
-  virtual void entryUpdated(MapEvent::View vEvent);
-  virtual void entryDeleted(MapEvent::View vEvent);
-};
 
 #define POF_TYPE_MESSAGE 1001
 
@@ -70,5 +47,33 @@ class Message {
 bool operator==(const Message& m1, const Message& m2);
 std::ostream& operator<<(std::ostream& out, const Message& m);
 size_t hash_value(const Message& m);
+
+class Cohml {
+private:
+  NamedCache::Handle hCache;
+  String::View vsRet; // to keep the C string in scope
+  std::ostringstream msg; // debug messages
+public:
+  Cohml(char* cn);
+  void put(char* k, char* v);
+  void remove(char* k);
+  const char* getCString(char* k);
+  void addFilterListener(value* cbf_i, value* cbf_u, value* cbf_d);
+  void put_message(Message& m);
+  const Message* get_message(int k);
+  ~Cohml();
+};
+
+class CohmlMapListener:public class_spec<CohmlMapListener, extends<Object>, implements<MapListener> > {
+  friend class factory<CohmlMapListener>;
+public:
+  value* cbf_insert;
+  value* cbf_update;
+  value* cbf_delete;
+  virtual void entryInserted(MapEvent::View vEvent);
+  virtual void entryUpdated(MapEvent::View vEvent);
+  virtual void entryDeleted(MapEvent::View vEvent);
+};
+
 #endif
 // End of file
