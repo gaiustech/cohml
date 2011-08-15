@@ -48,6 +48,8 @@ public:
   virtual void entryDeleted(MapEvent::View vEvent);
 };
 
+#define POF_TYPE_MESSAGE 1001
+
 class Message {
  private:
   const int msg_id;
@@ -65,5 +67,8 @@ class Message {
   std::string getBody() const;
 };
 
+bool operator==(const Message& m1, const Message& m2);
+std::ostream& operator<<(std::ostream& out, const Message& m);
+size_t hash_value(const Message& m);
 #endif
 // End of file

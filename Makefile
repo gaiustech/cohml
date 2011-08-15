@@ -9,6 +9,10 @@ cohmlsh:	$(COBJS) $(MLOBJS)
 	ocamlmktop -g -custom -o $@ -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence unix.cma $(MLOBJS) $(COBJS)
 	mkdir -p log
 
+message:	$(COBJS) $(MLOBJS) message.ml
+	ocamlc -g -custom -o $@ -cclib -L$(COH_HOME_CPP)/lib -cclib -lcoherence unix.cma $(MLOBJS) message.ml $(COBJS)
+
+
 listener:	$(COBJS) $(MLOBJS) listener.ml
 	ocamlc -g -custom -o $@ -cclib -L$(COH_HOME_CPP)/lib -cclib -lcoherence unix.cma $(MLOBJS) listener.ml $(COBJS)
 
