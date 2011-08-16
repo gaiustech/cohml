@@ -120,8 +120,9 @@ extern "C" {
     vector<Message*>* msgv = c->query_message_pri(p);
     
     // alloc an OCaml list large enough for them (this bit based on oci_select.c)
-    msgs = caml_alloc(msgv->size(), 0);
-
+    int s = msgv->size();
+    msgs = caml_alloc(s, 0);
+    
     // iterate over the vector packing each one - could use an iterator but need the index anyway
     for (int i = 0; i < msgv->size(); i++) {
       mt = caml_alloc_tuple(4);

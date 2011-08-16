@@ -71,8 +71,14 @@ extern "C" {
     caml_raise_with_arg(*caml_named_value("Coh_exception"), e);
   }
 
+  void finalize_cohml(value co) {
+    cerr << __func__ << ": entered!" << endl;
+    Cohml* c = Cohml_val(co);
+    delete c;
+  }
+
   // operations for the OCaml GC
-  static struct custom_operations coh_custom_ops = {"coh_custom_ops", NULL, NULL, NULL, NULL, NULL};
+  static struct custom_operations coh_custom_ops = {"coh_custom_ops", finalize_cohml, NULL, NULL, NULL, NULL};
 
   // connect to Coherence and open a named cache
   value caml_coh_getcache(value cn) {
@@ -261,7 +267,7 @@ const Message* Cohml::get_message(int k) {
 // query the grid and return a Vector of Message objects
 vector<Message*>* Cohml::query_message_pri(int k) {
   vector<Message*>* msgv = new vector<Message*>; 
-  //ValueExtractor::Handle hExtractor = ReflectionExtractor::create("getPriority");
+  // field 1 is the priority of type int
   PofExtractor::Handle hExtractor = PofExtractor::create(typeid(int32_t), 1);
   Filter::View vFilter = LessEqualsFilter::create(hExtractor, Integer32::create(k));
 
