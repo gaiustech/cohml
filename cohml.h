@@ -11,6 +11,7 @@ extern "C" {
 #include "coherence/util/MapListener.hpp"
 #include "coherence/util/MapEvent.hpp"
 #include <iostream>
+#include <vector>
 
 using namespace coherence::lang;
 using coherence::net::CacheFactory;
@@ -29,10 +30,10 @@ extern "C" {
 
 class Message {
  private:
-  const int msg_id;
-  const int msg_priority;
-  const std::string msg_subject;
-  const std::string msg_body;
+  int msg_id;
+  int msg_priority;
+  std::string msg_subject;
+  std::string msg_body;
  public:
   Message(int i, int p, const std::string& s, const std::string& b); 
   Message(const Message& that); 
@@ -61,6 +62,7 @@ public:
   void addFilterListener(value* cbf_i, value* cbf_u, value* cbf_d);
   void put_message(Message& m);
   const Message* get_message(int k);
+  std::vector<Message*>* query_message_pri(int k);
   ~Cohml();
 };
 

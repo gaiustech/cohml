@@ -18,7 +18,7 @@ mkdir -p $DIR/log
 
 # start the cache
 echo -n Starting cache... 
-$JAVA_HOME/bin/java -cp $CLASSPATH -Dtangosol.coherence.log=$DIR/log/cache-server.log com.tangosol.net.DefaultCacheServer &
+$JAVA_HOME/bin/java -cp $CLASSPATH -Dtangosol.pof.enabled=true -Dtangosol.coherence.log=$DIR/log/cache-server.log com.tangosol.net.DefaultCacheServer &
 CACHE_PID=$!
 echo done!
 # give it a chance to stabilize
@@ -27,7 +27,7 @@ sleep 1
 
 # start the proxy
 echo -n Starting proxy... 
-$JAVA_HOME/bin/java -cp $CLASSPATH -Dtangosol.coherence.cacheconfig=$DIR/coherence-proxy-config.xml -Dtangosol.coherence.extend.enabled=true -Dtangosol.coherence.log=$DIR/log/cache-proxy.log com.tangosol.net.DefaultCacheServer &
+$JAVA_HOME/bin/java -cp $CLASSPATH -Dtangosol.coherence.cacheconfig=$DIR/coherence-proxy-config.xml -Dtangosol.pof.enabled=true -Dtangosol.coherence.extend.enabled=true -Dtangosol.coherence.log=$DIR/log/cache-proxy.log com.tangosol.net.DefaultCacheServer &
 PROXY_PID=$!
 echo done! 
 

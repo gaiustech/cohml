@@ -9,7 +9,10 @@ extern "C" {
 #include <caml/fail.h>
 } //extern C
 
+#include <vector>
 #include "cohml.h"
+
+using std::vector;
 
 // constructors
 Message::Message(int i, int p, const std::string& s, const std::string& b) : msg_id(i), msg_priority(p), msg_subject(s), msg_body(b) {}
@@ -104,6 +107,38 @@ extern "C" {
 
     // return to OCaml
     CAMLreturn(mt);
+  }
+
+  // fetch all objects from the cache with a priority <= some threshold
+  value caml_query_message_pri(value co, value msg_pri) {
+    CAMLparam2(co, msg_pri);
+    Cohml* c = Cohml_val(co);
+    int p = Int_val(msg_pri);
+    CAMLlocal2(msgs, mt);
+
+    // get a stl::vector containing all the matching objects back from Coherence
+    vector<Message*>* msgv = c->query_message_pri(p);
+    
+    // alloc an OCaml list large enough for them (this bit based on oci_select.c)
+    msgs = caml_alloc(msgv->size(), 0);
+
+    // iterate over the vector packing each one - could use an iterator but need the index anyway
+    for (int i = 0; i < msgv->size(); i++) {
+      mt = caml_alloc_tuple(4);
+      Message* m = msgv->at(i);
+      
+      Store_field(mt, 0, Val_long(m->getId()));
+      Store_field(mt, 1, Val_long(m->getPriority()));
+      Store_field(mt, 2, caml_copy_string((char*)m->getSubject().c_str()));
+      Store_field(mt, 3, caml_copy_string((char*)m->getBody().c_str()));
+      Store_field(msgs, i, mt);
+    }
+    
+    // clean up the vector - don't need it anymore in C
+    delete msgv;
+    
+    // return it to OCaml
+    CAMLreturn(msgs);
   }
 }
 

@@ -1,3 +1,6 @@
+// OCaml <-> C++ <-> Coherence binding
+
+// OCaml includes
 extern "C" {
 #include <caml/mlvalues.h>
 #include <caml/memory.h>
@@ -7,36 +10,56 @@ extern "C" {
 #include <caml/fail.h>
 } //extern C
 
+// basic includes
 #include "coherence/lang.ns"
 #include "coherence/net/CacheFactory.hpp"
 #include "coherence/net/NamedCache.hpp"
 #include "coherence/lang/Exception.hpp"
+
+// includes for MapListener
 #include "coherence/util/MapListener.hpp"
 #include "coherence/util/MapEvent.hpp"
+
+// includes for queries
+#include "coherence/util/extractor/ReflectionExtractor.hpp"
+#include "coherence/util/extractor/PofExtractor.hpp"
+#include "coherence/util/ValueExtractor.hpp"
+#include "coherence/util/Filter.hpp"
+#include "coherence/util/filter/LessEqualsFilter.hpp"
+#include "coherence/util/Iterator.hpp"
+
 #include <iostream>
 #include <sstream>
 #include "cohml.h"
 
-using namespace coherence::lang;
-using coherence::net::CacheFactory;
-using coherence::net::NamedCache;
 using std::endl;
 using std::cerr;
 using std::ostringstream;
+using std::vector;
+
+using namespace coherence::lang;
+using coherence::net::CacheFactory;
+using coherence::net::NamedCache;
 using coherence::util::MapListener;
 using coherence::util::MapEvent;
+using coherence::util::ValueExtractor;
+using coherence::util::Filter;
+using coherence::util::filter::LessEqualsFilter;
+using coherence::util::extractor::ReflectionExtractor;
+using coherence::util::extractor::PofExtractor;
+using coherence::util::Iterator;
 
-#define DEBUG
+//#define DEBUG
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 // Using C to interact with OCaml
 extern "C" {
-  /* write a timestamped log message {C} for C code */
+  /* write a timestamped log message tagged {C} for originating in C code */
   void debug(const char* msg) {
     char datebuf[32];
     time_t t = time(NULL);
     strftime((char*)&datebuf, 31, "%a %b %e %T %Y", (gmtime(&t)));
-    cerr << datebuf << ": " << msg << endl;
+    cerr << datebuf << ": " << msg << " {C}" << endl;
   }
   
   /* kick an error back into OCaml-land */
@@ -139,15 +162,17 @@ Cohml::Cohml(char* cn) {
   hCache = CacheFactory::getCache(vsCacheName);
 }
 
+// put a string key-pair into the cache
 void Cohml::put(char* k, char* v) {
   String::View vsKey = k; String::View vsVal = v;
   hCache->put(vsKey, vsVal);
 #ifdef DEBUG
   msg << __func__ << ": Put key=" << vsKey << " value=" << vsVal;
-  debug(msg.str().c_str());
+  debug(msg.str().c_str()); 
 #endif
 }
-  
+
+// delete a string-key'd item from the cache
 void Cohml::remove(char* k) {
   String::View vsKey = k; 
   hCache->remove(vsKey);
@@ -157,6 +182,7 @@ void Cohml::remove(char* k) {
 #endif
 }
 
+// retrieve a string key-value pair from the cache and return it C style
 const char* Cohml::getCString(char* k) {
   String::View vsKey = k;
   vsRet = cast<String::View>(hCache->get(vsKey));
@@ -167,6 +193,7 @@ const char* Cohml::getCString(char* k) {
   return vsRet->getCString();
 }
 
+// add callbacks for MapListener
 void Cohml::addFilterListener(value* cbf_i, value* cbf_u, value* cbf_d) {
   TypedHandle<CohmlMapListener> cml = CohmlMapListener::create();
   cml->cbf_insert = cbf_i; cml->cbf_update = cbf_u; cml->cbf_delete = cbf_d;
@@ -229,6 +256,28 @@ const Message* Cohml::get_message(int k) {
     caml_raise_not_found();
   }
   return m;
+}
+
+// query the grid and return a Vector of Message objects
+vector<Message*>* Cohml::query_message_pri(int k) {
+  vector<Message*>* msgv = new vector<Message*>; 
+  //ValueExtractor::Handle hExtractor = ReflectionExtractor::create("getPriority");
+  PofExtractor::Handle hExtractor = PofExtractor::create(typeid(int32_t), 1);
+  Filter::View vFilter = LessEqualsFilter::create(hExtractor, Integer32::create(k));
+
+  for (Iterator::Handle hIter = hCache->entrySet(vFilter)->iterator(); hIter->hasNext() ;) {
+    Map::Entry::Handle hEntry = cast<Map::Entry::Handle>(hIter->next());
+    Integer32::View vKey = cast<Integer32::View>(hEntry->getKey());
+    Managed<Message>::View vMessage = cast<Managed<Message>::View>(hCache->get(vKey));
+#ifdef DEBUG
+    msg << __func__ << ": retrieved message: " << vMessage;
+    debug(msg.str().c_str());
+#endif
+    Message* m = new Message(vMessage->getId(), vMessage->getPriority(), vMessage->getSubject(), vMessage->getBody());
+    msgv->push_back(m);
+  }
+
+  return msgv;
 }
 
 // End of file

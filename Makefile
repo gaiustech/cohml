@@ -3,7 +3,7 @@
 COH_HOME_CPP=/opt/coherence-cpp
 CCFLAGS=-ccopt -I/usr/lib/ocaml -ccopt -I$(COH_HOME_CPP)/include -ccopt -Wall
 COBJS=message.o messageserializer.o cohml.o
-MLOBJS=cohml.cmo
+MLOBJS=cohml.cmo log_message.cmo
 
 cohmlsh:	$(COBJS) $(MLOBJS)
 	ocamlmktop -g -custom -o $@ -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence unix.cma $(MLOBJS) $(COBJS)
@@ -23,6 +23,6 @@ listener:	$(COBJS) $(MLOBJS) listener.ml
 	ocamlc -c -g unix.cma $<
 
 clean:
-	rm -f *.o *.cm* *.so *.a cohml listener
+	rm -f *.o *.cm* *.so *.a cohml listener message
 
 # End of file
