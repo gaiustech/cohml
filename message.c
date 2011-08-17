@@ -10,6 +10,7 @@ extern "C" {
 } //extern C
 
 #include <vector>
+//#define DEBUG
 #include "cohml.h"
 
 using std::vector;
@@ -75,9 +76,7 @@ extern "C" {
 
     // create an unmanaged Message object on the stack
     Message m(i, p, s, b);
-#ifdef DEBUG
-    std::cout <<__func__ <<": " << m << std::endl;
-#endif
+
     // send this off to the Cohml class for processing - this could have been in the Message
     // class but I wanted to keep it "pure". 
     c->put_message(m);

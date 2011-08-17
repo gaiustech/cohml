@@ -30,6 +30,9 @@ extern "C" {
 
 #include <iostream>
 #include <sstream>
+
+// NOTE: if DEBUG is required, it must be #defined *before* cohml.h is #included
+//#define DEBUG
 #include "cohml.h"
 
 using std::endl;
@@ -49,7 +52,6 @@ using coherence::util::extractor::ReflectionExtractor;
 using coherence::util::extractor::PofExtractor;
 using coherence::util::Iterator;
 
-//#define DEBUG
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 // Using C to interact with OCaml
@@ -173,8 +175,7 @@ void Cohml::put(char* k, char* v) {
   String::View vsKey = k; String::View vsVal = v;
   hCache->put(vsKey, vsVal);
 #ifdef DEBUG
-  msg << __func__ << ": Put key=" << vsKey << " value=" << vsVal;
-  debug(msg.str().c_str()); 
+  DEBUG_MSG("Put key=" << vsKey << " value=" << vsVal);
 #endif
 }
 
@@ -183,8 +184,7 @@ void Cohml::remove(char* k) {
   String::View vsKey = k; 
   hCache->remove(vsKey);
 #ifdef DEBUG
-  msg << __func__ << ": Removed key=" << vsKey;
-  debug(msg.str().c_str());
+  DEBUG_MSG("Removed key=" << vsKey);
 #endif
 }
 
@@ -193,8 +193,7 @@ const char* Cohml::getCString(char* k) {
   String::View vsKey = k;
   vsRet = cast<String::View>(hCache->get(vsKey));
 #ifdef DEBUG
-  msg << __func__ << ": Get key=" << vsKey << " value=" << vsRet;
-  debug(msg.str().c_str());
+  DEBUG_MSG("Get key=" << vsKey << " value=" << vsRet);
 #endif
   return vsRet->getCString();
 }
@@ -206,16 +205,12 @@ void Cohml::addFilterListener(value* cbf_i, value* cbf_u, value* cbf_d) {
 
   hCache->addFilterListener(cml);
 #ifdef DEBUG
-  msg << __func__ << ": listening";
-  debug(msg.str().c_str());
+  DEBUG_MSG("listening");
 #endif
 }
 
 Cohml::~Cohml() {
-#ifdef DEBUG
-  msg << __func__ << ": Disconnecting from Coherence";
-  debug(msg.str().c_str());
-#endif  
+  DEBUG_MSG("Disconnecting from Coherence");
   CacheFactory::shutdown();
 }
 
@@ -245,10 +240,8 @@ void Cohml::put_message(Message& m) {
   Managed<Message>::View vMessage = Managed<Message>::create(m);
   Integer32::View vKey = Integer32::create(m.getId());
   hCache->put(vKey, vMessage);
-#ifdef DEBUG
-  msg << __func__ << ": Put message key=" << vKey;
-  debug(msg.str().c_str());
-#endif
+  DEBUG_MSG("Put message key=" << vKey);
+
 }
 
 // retrieve a message keyed by its ID - or throws Not_found back to OCaml if not found
@@ -275,10 +268,7 @@ vector<Message*>* Cohml::query_message_pri(int k) {
     Map::Entry::Handle hEntry = cast<Map::Entry::Handle>(hIter->next());
     Integer32::View vKey = cast<Integer32::View>(hEntry->getKey());
     Managed<Message>::View vMessage = cast<Managed<Message>::View>(hCache->get(vKey));
-#ifdef DEBUG
-    msg << __func__ << ": retrieved message: " << vMessage;
-    debug(msg.str().c_str());
-#endif
+    DEBUG_MSG("retrieved message: " << vMessage);
     Message* m = new Message(vMessage->getId(), vMessage->getPriority(), vMessage->getSubject(), vMessage->getBody());
     msgv->push_back(m);
   }

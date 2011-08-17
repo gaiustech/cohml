@@ -19,6 +19,12 @@ using coherence::net::NamedCache;
 using coherence::util::MapListener;
 using coherence::util::MapEvent;
 
+#ifdef DEBUG
+#define DEBUG_MSG(x) msg << __FILE__ << ":" << __func__ << ":" << __LINE__ <<": "<< x; debug(msg.str().c_str()); msg.str(""); 
+#else
+#define DEBUG_MSG(x) //x
+#endif 
+
 #define Cohml_val(v)   (*((Cohml**)       Data_custom_val(v)))
 
 extern "C" {
