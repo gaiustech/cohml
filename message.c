@@ -114,25 +114,28 @@ extern "C" {
     CAMLparam2(co, msg_pri);
     Cohml* c = Cohml_val(co);
     int p = Int_val(msg_pri);
-    CAMLlocal2(msgs, mt);
+    CAMLlocal3(msgs, mt, cons);
 
     // get a stl::vector containing all the matching objects back from Coherence
     vector<Message*>* msgv = c->query_message_pri(p);
     
     // alloc an OCaml list large enough for them (this bit based on oci_select.c)
-    int s = msgv->size();
-    msgs = caml_alloc(s, 0);
+    msgs = Val_emptylist;
     
     // iterate over the vector packing each one - could use an iterator but need the index anyway
     for (int i = 0; i < msgv->size(); i++) {
       mt = caml_alloc_tuple(4);
+      cons = caml_alloc(2,0);
       Message* m = msgv->at(i);
       
       Store_field(mt, 0, Val_long(m->getId()));
       Store_field(mt, 1, Val_long(m->getPriority()));
       Store_field(mt, 2, caml_copy_string((char*)m->getSubject().c_str()));
       Store_field(mt, 3, caml_copy_string((char*)m->getBody().c_str()));
-      Store_field(msgs, i, mt);
+
+      Store_field(cons, 0, mt);
+      Store_field(cons, 1, msgs);
+      msgs = cons;
     }
     
     // clean up the vector - don't need it anymore in C

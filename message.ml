@@ -14,9 +14,10 @@ let print_message m = log_message (sprintf "id=%d, priority=%d, subject='%s', bo
 
 let () = 
   let test_msgs = [{msg_id = 1; msg_priority=3; msg_subject="test";    msg_body="hello, world!"};
-		   {msg_id = 2; msg_priority=1; msg_subject="urgent!"; msg_body="High priority message"}] in
+		   {msg_id = 2; msg_priority=1; msg_subject="urgent!"; msg_body="High priority message"};
+		   {msg_id = 3; msg_priority=1; msg_subject="urgent!"; msg_body="High priority message 2"}] in
   let c = coh_getcache "message_cache" in
   List.iter (coh_put_message c) test_msgs;
-  print_message (List.hd (coh_pri_message c 2));
+  List.iter print_message (coh_pri_message c 2)
   
 (* end of file *)
