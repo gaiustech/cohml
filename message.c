@@ -115,17 +115,17 @@ extern "C" {
     int p = Int_val(msg_pri);
     CAMLlocal3(msgs, mt, cons);
 
-    // get a stl::vector containing all the matching objects back from Coherence
+    // get a pointer to the stl::vector containing all the matching objects back from Coherence
     vector<Message*>* msgv = c->query_message_pri(p);
     
-    // alloc an OCaml list large enough for them (this bit based on oci_select.c)
+    // alloc an OCaml list 
     msgs = Val_emptylist;
     
-    // iterate over the vector packing each one - could use an iterator but need the index anyway
-    for (int i = 0; i < msgv->size(); i++) {
+    // iterate over the vector packing each one
+    for (vector<Message*>::iterator mi = msgv->begin(); mi != msgv->end(); mi ++) {
       mt = caml_alloc_tuple(4);
       cons = caml_alloc(2,0);
-      Message* m = msgv->at(i);
+      Message* m = *mi;
       
       Store_field(mt, 0, Val_long(m->getId()));
       Store_field(mt, 1, Val_long(m->getPriority()));
