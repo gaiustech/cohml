@@ -245,7 +245,7 @@ void Cohml::put_message(Message& m) {
 }
 
 // retrieve a message keyed by its ID - or throws Not_found back to OCaml if not found
-const Message* Cohml::get_message(int k) {
+Message* Cohml::get_message(int k) {
   Integer32::View vKey = Integer32::create(k);
   Managed<Message>::View vm = cast<Managed<Message>::View>(hCache->get(vKey));
   Message* m;

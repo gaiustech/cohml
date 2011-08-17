@@ -67,7 +67,7 @@ public:
   const char* getCString(char* k);
   void addFilterListener(value* cbf_i, value* cbf_u, value* cbf_d);
   void put_message(Message& m);
-  const Message* get_message(int k);
+  Message* get_message(int k);
   std::vector<Message*>* query_message_pri(int k);
   ~Cohml();
 };

@@ -18,6 +18,9 @@ let () =
 		   {msg_id = 3; msg_priority=1; msg_subject="urgent!"; msg_body="High priority message 2"}] in
   let c = coh_getcache "message_cache" in
   List.iter (coh_put_message c) test_msgs;
+  log_message "Testing retrieval by ID";
+  print_message (coh_get_message c 1);
+  log_message "Testing retrieval by priority";
   List.iter print_message (coh_pri_message c 2)
   
 (* end of file *)

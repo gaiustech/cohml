@@ -84,6 +84,14 @@ extern "C" {
     CAMLreturn(Val_unit);
   }
   
+ // convert a Message object into an OCaml tuple
+  void message_to_tuple(Message* m, value& mt) {
+    Store_field(mt, 0, Val_long(m->getId()));
+    Store_field(mt, 1, Val_long(m->getPriority()));
+    Store_field(mt, 2, caml_copy_string((char*)m->getSubject().c_str()));
+    Store_field(mt, 3, caml_copy_string((char*)m->getBody().c_str()));
+  }
+
   // fetch an object of type Message from the cache and return it to OCaml as a record
   value caml_get_message(value co, value msg_id) {
     CAMLparam2(co, msg_id);
@@ -92,14 +100,11 @@ extern "C" {
     CAMLlocal1(mt);
 
     // get an unmanaged, heap-allocated message back from Cohml
-    const Message* m = c->get_message(i);
+    Message* m = c->get_message(i);
 
     // marshal this for OCaml
     mt = caml_alloc_tuple(4);
-    Store_field(mt, 0, Val_int(m->getId()));
-    Store_field(mt, 1, Val_int(m->getPriority()));
-    Store_field(mt, 2, caml_copy_string((char*)m->getSubject().c_str()));
-    Store_field(mt, 3, caml_copy_string((char*)m->getBody().c_str()));
+    message_to_tuple(m, mt);
 
     // clean up the returned object - don't need it anymore in C
     delete m;
@@ -127,10 +132,7 @@ extern "C" {
       cons = caml_alloc(2,0);
       Message* m = *mi;
       
-      Store_field(mt, 0, Val_long(m->getId()));
-      Store_field(mt, 1, Val_long(m->getPriority()));
-      Store_field(mt, 2, caml_copy_string((char*)m->getSubject().c_str()));
-      Store_field(mt, 3, caml_copy_string((char*)m->getBody().c_str()));
+      message_to_tuple(m, mt);
 
       Store_field(cons, 0, mt);
       Store_field(cons, 1, msgs);
