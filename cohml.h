@@ -20,7 +20,7 @@ using coherence::util::MapListener;
 using coherence::util::MapEvent;
 
 #ifdef DEBUG
-#define DEBUG_MSG(x) msg << __FILE__ << ":" << __func__ << ":" << __LINE__ <<": "<< x; debug(msg.str().c_str()); msg.str(""); 
+#define DEBUG_MSG(x) msg << __FILE__ << ":" << __LINE__ << " in " << __func__ <<"(): "<< x; debug(msg.str().c_str()); msg.str(""); 
 #else
 #define DEBUG_MSG(x) //x
 #endif 
