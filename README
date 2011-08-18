@@ -6,5 +6,6 @@ Implements:
 	- listen for events (ditto)
 	- get/put of Message datatype (id, priority, subject, message body)
 	- query of Message type by priority
+	- listen for events on Message type
 
 See blog at http://gaiustech.wordpress.com/ for more details.
