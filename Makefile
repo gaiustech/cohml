@@ -2,7 +2,7 @@
 
 COH_HOME_CPP=/opt/coherence-cpp
 CCFLAGS=-ccopt -I/usr/lib/ocaml -ccopt -I$(COH_HOME_CPP)/include -ccopt -Wall
-COBJS=message.o messageserializer.o cohml.o
+COBJS=message.o messagemaplistener.o messageserializer.o cohml.o
 MLOBJS=cohml.cmo log_message.cmo
 
 cohmlsh:	$(COBJS) $(MLOBJS) 
