@@ -5,6 +5,8 @@ CCFLAGS=-ccopt -I/usr/lib/ocaml -ccopt -I$(COH_HOME_CPP)/include -ccopt -Wall
 COBJS=message.o messagemaplistener.o messageserializer.o cohml.o
 MLOBJS=cohml.cmo log_message.cmo
 
+all:	cohmlsh subscriber publisher message listener
+
 cohmlsh:	$(COBJS) $(MLOBJS) 
 	ocamlmktop -g -custom -o $@ -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence unix.cma $(MLOBJS) $(COBJS)
 	mkdir -p log
@@ -12,6 +14,8 @@ cohmlsh:	$(COBJS) $(MLOBJS)
 subscriber:	$(COBJS) $(MLOBJS) subscriber.ml
 	ocamlc -g -annot -custom -o $@ -cclib -L$(COH_HOME_CPP)/lib -cclib -lcoherence unix.cma $(MLOBJS) subscriber.ml $(COBJS)
 
+publisher:	$(COBJS) $(MLOBJS) publisher.ml
+	ocamlc -g -annot -custom -o $@ -cclib -L$(COH_HOME_CPP)/lib -cclib -lcoherence unix.cma $(MLOBJS) publisher.ml $(COBJS)
 
 message:	$(COBJS) $(MLOBJS) message.ml
 	ocamlc -g -custom -o $@ -cclib -L$(COH_HOME_CPP)/lib -cclib -lcoherence unix.cma $(MLOBJS) message.ml $(COBJS)
@@ -27,6 +31,6 @@ listener:	$(COBJS) $(MLOBJS) listener.ml
 	ocamlc -c -g -annot unix.cma $<
 
 clean:
-	rm -f *.o *.cm* *.so *.a cohmlsh listener message subscriber publisher
+	rm -f *.o *.cm* *.so *.a cohmlsh listener message subscriber publisher *~ 
 
 # End of file
