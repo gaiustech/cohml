@@ -27,6 +27,6 @@ listener:	$(COBJS) $(MLOBJS) listener.ml
 	ocamlc -c -g -annot unix.cma $<
 
 clean:
-	rm -f *.o *.cm* *.so *.a cohmlsh listener message
+	rm -f *.o *.cm* *.so *.a cohmlsh listener message subscriber publisher
 
 # End of file

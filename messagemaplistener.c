@@ -19,11 +19,13 @@ extern "C" {
 #include "coherence/util/MapEvent.hpp"
 
 // includes for queries
-#include "coherence/util/extractor/ReflectionExtractor.hpp"
 #include "coherence/util/extractor/PofExtractor.hpp"
 #include "coherence/util/ValueExtractor.hpp"
 #include "coherence/util/Filter.hpp"
 #include "coherence/util/filter/LessEqualsFilter.hpp"
+#include "coherence/util/filter/GreaterEqualsFilter.hpp"
+#include "coherence/util/filter/EqualsFilter.hpp"
+#include "coherence/util/filter/LikeFilter.hpp"
 #include "coherence/util/Iterator.hpp"
 
 #include <iostream>
@@ -47,6 +49,9 @@ using coherence::util::MapEvent;
 using coherence::util::ValueExtractor;
 using coherence::util::Filter;
 using coherence::util::filter::LessEqualsFilter;
+using coherence::util::filter::GreaterEqualsFilter;
+using coherence::util::filter::LikeFilter;
+using coherence::util::filter::EqualsFilter;
 using coherence::util::extractor::PofExtractor;
 using coherence::util::Iterator;
 
@@ -54,14 +59,14 @@ using coherence::util::Iterator;
 
 extern "C" {
   // add callbacks for the Message type - note different cbf names from addfilterlistener
-  value caml_coh_addmessagelistener(value co, value query, value ins, value upd, value del) {
-    CAMLparam5(co, query, ins, upd, del);
+  value caml_coh_addmessagelistener(value co, value query, value cbf_ins, value cbf_upd, value cbf_del) {
+    CAMLparam5(co, query, cbf_ins, cbf_upd, cbf_del);
     Cohml* c = Cohml_val(co);
     
     int f = Int_val(Field(query, 0)); // see enums in MessageMapListener class - field 0-3
     int ft = Int_val(Field(query, 1)); // field_type 0-1
     int cond = Int_val(Field(query, 2)); //condition 0-3
-    int sti = 0; char* stc = NULL;
+    int sti = 0; char* stc = NULL; // int if field type is 0, else string
     
     switch (ft) {
     case MessageMapListener::INT:
@@ -72,13 +77,10 @@ extern "C" {
       break;
     }
     
-    char* iname = String_val(ins);
-    char* uname = String_val(upd);
-    char* dname = String_val(del);
+    value* cbf_i = caml_named_value(String_val(cbf_ins));
+    value* cbf_u = caml_named_value(String_val(cbf_upd));
+    value* cbf_d = caml_named_value(String_val(cbf_del));
 
-    value* cbf_i = caml_named_value(iname);
-    value* cbf_u = caml_named_value(uname);
-    value* cbf_d = caml_named_value(dname);
     if ( (cbf_i == NULL) || (cbf_u == NULL) || (cbf_d == NULL)) {
       caml_raise_with_arg(*caml_named_value("Cohml_exception"), caml_copy_string("Cannot listen: callbacks not defined!"));
     } else {
@@ -132,12 +134,20 @@ void MessageMapListener::entryDeleted(MapEvent::View vEvent) {
   caml_callback(*cbf_delete, Val_int((cast<Integer32::View>(vEvent->getKey()))->getInt32Value()));
 }
 
-// add a listener for the message type
-void Cohml::addMessageListener(int f, int ft, int cont, int sti, char* stc, value* cbf_i, value* cbf_u, value* cbf_d) {
-
+// add a listener for the message type - see caml_coh_addmessagelistener()
+void Cohml::addMessageListener(int f, int ft, int cond, int sti, char* stc, value* cbf_i, value* cbf_u, value* cbf_d) {
+  CAMLlocal1(mt);
   TypedHandle<MessageMapListener> mml = MessageMapListener::create();
-  mml->cbf_insert = cbf_i; mml->cbf_update = cbf_u; mml->cbf_delete = cbf_d;
+  mml->cbf_insert = cbf_i; 
+  mml->cbf_update = cbf_u; 
+  mml->cbf_delete = cbf_d;
   
+  // from field, field_type, condition, and search term (int or string), 
+  // construct a Filter using a PofExtractor
+
+  // existing records in the cache will be processed using the insert callback
+  // (or should they be discarded? a philosophical question)
+
   // this should be adding it to the continuous query, not to the cache handle
   hCache->addFilterListener(mml);
   DEBUG_MSG("listening");

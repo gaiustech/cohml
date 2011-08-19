@@ -127,16 +127,14 @@ extern "C" {
   }
 
   // register a maplistener for the string-string type
-  value caml_coh_addfilterlistener(value co, value ins, value upd, value del) {
-    CAMLparam4(co, ins, upd, del);
+  value caml_coh_addfilterlistener(value co, value cbf_ins, value cbf_upd, value cbf_del) {
+    CAMLparam4(co, cbf_ins, cbf_upd, cbf_del);
     Cohml* c = Cohml_val(co);
-    char* iname = String_val(ins);
-    char* uname = String_val(upd);
-    char* dname = String_val(del);
 
-    value* cbf_i = caml_named_value(iname);
-    value* cbf_u = caml_named_value(uname);
-    value* cbf_d = caml_named_value(dname);
+    value* cbf_i = caml_named_value(String_val(cbf_ins));
+    value* cbf_u = caml_named_value(String_val(cbf_upd));
+    value* cbf_d = caml_named_value(String_val(cbf_del));
+
     if ( (cbf_i == NULL) || (cbf_u == NULL) || (cbf_d == NULL)) {
       caml_raise_with_arg(*caml_named_value("Cohml_exception"), caml_copy_string("Cannot listen: callbacks not defined!"));
     } else {
@@ -201,7 +199,9 @@ const char* Cohml::getCString(char* k) {
 // add callbacks for MapListener
 void Cohml::addFilterListener(value* cbf_i, value* cbf_u, value* cbf_d) {
   TypedHandle<CohmlMapListener> cml = CohmlMapListener::create();
-  cml->cbf_insert = cbf_i; cml->cbf_update = cbf_u; cml->cbf_delete = cbf_d;
+  cml->cbf_insert = cbf_i; 
+  cml->cbf_update = cbf_u; 
+  cml->cbf_delete = cbf_d;
 
   hCache->addFilterListener(cml);
   DEBUG_MSG("listening");

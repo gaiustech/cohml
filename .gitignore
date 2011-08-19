@@ -1,0 +1,7 @@
+log/*
+stop-coh.sh
+*.cmo
+*.cmi
+*.annot
+*.o
+*~
