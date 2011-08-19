@@ -31,7 +31,7 @@ extern "C" {
 #include <sstream>
 
 // NOTE: if DEBUG is required, it must be #defined *before* cohml.h is #included
-//#define DEBUG
+#define DEBUG
 #include "cohml.h"
 
 using std::endl;
@@ -127,13 +127,16 @@ extern "C" {
   }
 
   // register a maplistener for the string-string type
-  value caml_coh_addfilterlistener(value co) {
-    CAMLparam1(co);
+  value caml_coh_addfilterlistener(value co, value ins, value upd, value del) {
+    CAMLparam4(co, ins, upd, del);
     Cohml* c = Cohml_val(co);
+    char* iname = String_val(ins);
+    char* uname = String_val(upd);
+    char* dname = String_val(del);
 
-    value* cbf_i = caml_named_value("cbf_coh_insert");
-    value* cbf_u = caml_named_value("cbf_coh_update");
-    value* cbf_d = caml_named_value("cbf_coh_delete");
+    value* cbf_i = caml_named_value(iname);
+    value* cbf_u = caml_named_value(uname);
+    value* cbf_d = caml_named_value(dname);
     if ( (cbf_i == NULL) || (cbf_u == NULL) || (cbf_d == NULL)) {
       caml_raise_with_arg(*caml_named_value("Cohml_exception"), caml_copy_string("Cannot listen: callbacks not defined!"));
     } else {

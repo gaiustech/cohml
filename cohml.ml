@@ -20,5 +20,5 @@ external coh_get: coh_ptr -> string -> string = "caml_coh_get"
 external coh_remove: coh_ptr -> string -> unit = "caml_coh_remove" (* would prefer del but this matches the underlying API *)
 
 (* register callbacks for CohmlMapListener - insert, update, delete *)
-external coh_listen: coh_ptr -> string -> string -> string ->unit = "caml_coh_addfilterlistener"
+external coh_listen: coh_ptr -> string -> string -> string -> unit = "caml_coh_addfilterlistener"
 (* End of file *)

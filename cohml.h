@@ -79,7 +79,7 @@ public:
   Message* get_message(int k);
   // retrieve as a STL vector a list of message with a priority <= k
   std::vector<Message*>* query_message_pri(int k);
-  void addMessageListener(value* cbf_i, value* cbf_u, value* cbf_d);
+  void addMessageListener(int f, int ft, int cont, int sti, char* stc, value* cbf_i, value* cbf_u, value* cbf_d);
   ~Cohml();
 };
 
@@ -98,6 +98,9 @@ public:
 class MessageMapListener:public class_spec<MessageMapListener, extends<Object>, implements<MapListener> > {
   friend class factory<MessageMapListener>;
 public:
+  enum field { ID, PRIORITY, SUBJECT, BODY };
+  enum field_type { INT, STRING };
+  enum condition { LESS_THAN, EQUAL_TO, GREATER_THAN, LIKE };
   value* cbf_insert;
   value* cbf_update;
   value* cbf_delete;

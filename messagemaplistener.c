@@ -28,6 +28,7 @@ extern "C" {
 
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 
 // NOTE: if DEBUG is required, it must be #defined *before* cohml.h is #included
 //#define DEBUG
@@ -53,17 +54,35 @@ using coherence::util::Iterator;
 
 extern "C" {
   // add callbacks for the Message type - note different cbf names from addfilterlistener
-  value caml_coh_addmessagelistener(value co) {
-    CAMLparam1(co);
+  value caml_coh_addmessagelistener(value co, value query, value ins, value upd, value del) {
+    CAMLparam5(co, query, ins, upd, del);
     Cohml* c = Cohml_val(co);
+    
+    int f = Int_val(Field(query, 0)); // see enums in MessageMapListener class - field 0-3
+    int ft = Int_val(Field(query, 1)); // field_type 0-1
+    int cond = Int_val(Field(query, 2)); //condition 0-3
+    int sti = 0; char* stc = NULL;
+    
+    switch (ft) {
+    case MessageMapListener::INT:
+      sti = atoi(String_val(Field(query, 3)));
+      break;
+    case MessageMapListener::STRING:
+      stc = String_val(Field(query, 3));
+      break;
+    }
+    
+    char* iname = String_val(ins);
+    char* uname = String_val(upd);
+    char* dname = String_val(del);
 
-    value* cbf_i = caml_named_value("cbf_msg_insert");
-    value* cbf_u = caml_named_value("cbf_msg_update");
-    value* cbf_d = caml_named_value("cbf_msg_delete");
+    value* cbf_i = caml_named_value(iname);
+    value* cbf_u = caml_named_value(uname);
+    value* cbf_d = caml_named_value(dname);
     if ( (cbf_i == NULL) || (cbf_u == NULL) || (cbf_d == NULL)) {
       caml_raise_with_arg(*caml_named_value("Cohml_exception"), caml_copy_string("Cannot listen: callbacks not defined!"));
     } else {
-      c->addMessageListener(cbf_i, cbf_u, cbf_d);  
+      c->addMessageListener(f, ft, cond, sti, stc , cbf_i, cbf_u, cbf_d);  
     }
     
     CAMLreturn(Val_unit);
@@ -114,7 +133,8 @@ void MessageMapListener::entryDeleted(MapEvent::View vEvent) {
 }
 
 // add a listener for the message type
-void Cohml::addMessageListener(value* cbf_i, value* cbf_u, value* cbf_d) {
+void Cohml::addMessageListener(int f, int ft, int cont, int sti, char* stc, value* cbf_i, value* cbf_u, value* cbf_d) {
+
   TypedHandle<MessageMapListener> mml = MessageMapListener::create();
   mml->cbf_insert = cbf_i; mml->cbf_update = cbf_u; mml->cbf_delete = cbf_d;
   
