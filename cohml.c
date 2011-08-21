@@ -31,7 +31,7 @@ extern "C" {
 #include <sstream>
 
 // NOTE: if DEBUG is required, it must be #defined *before* cohml.h is #included
-#define DEBUG
+//#define DEBUG
 #include "cohml.h"
 
 using std::endl;

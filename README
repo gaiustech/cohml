@@ -8,4 +8,12 @@ Implements:
 	- query of Message type by priority
 	- listen for events on Message type
 
+To use:
+	- go to the server/ directory, edit start-coh.sh for the locations of
+	  your Java and C++ Coherence installations, and run it. This will start
+	  a basically sane Coherence
+	- go to cpptest/, make and run cpptest. This will verify that C++ can
+	  talk to Coherence
+	- return to the main directory, and make the binaries
+
 See blog at http://gaiustech.wordpress.com/ for more details.
