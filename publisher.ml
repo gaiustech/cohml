@@ -22,7 +22,8 @@ let () =
   for i = 1 to x do
     let m = {msg_id = i; msg_priority = p (); msg_subject = subjects.(s ()); msg_body = pad ^ (bodies.(b ()))} in
     coh_put_message c m;
-    print_message m
+    print_message m;
+    Unix.sleep 1
   done;
   log_message (Printf.sprintf "Sent %d messages in %.3fs" x (Unix.gettimeofday () -. t1))
 

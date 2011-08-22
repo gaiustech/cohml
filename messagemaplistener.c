@@ -9,8 +9,15 @@ extern "C" {
 
 #if OCAML_VERSION_MINOR >= 12
 #include <caml/threads.h>
-#define 
+#else
+#include <caml/signals.h>
 #endif 
+
+/* from threads.h in 3.12 only */
+#ifndef caml_acquire_runtime_system
+#define caml_acquire_runtime_system caml_leave_blocking_section
+#define caml_release_runtime_system caml_enter_blocking_section
+#endif
 } //extern C
 
 // basic includes
@@ -113,14 +120,10 @@ void MessageMapListener::entryInserted(MapEvent::View vEvent) {
   message_to_tuple(m, mt);
   int k = (cast<Integer32::View>(vEvent->getKey()))->getInt32Value();
 
-#if OCAML_VERSION_MINOR >= 12
-  caml_c_thread_register();
-#endif
+  caml_acquire_runtime_system();
   caml_callback2(*cbf_insert, Val_int(k), mt);
+  caml_release_runtime_system();
 
-#if OCAML_VERSION_MINOR >= 12
-  caml_c_thread_unregister();
-#endif
 }
 
 // call the OCaml function cbf_coh_update with the key, the previous value and the new value
@@ -143,13 +146,16 @@ vm = cast<Managed<Message>::View>(vEvent->getNewValue());
   message_to_tuple(m, nmt);
   
   int k = (cast<Integer32::View>(vEvent->getKey()))->getInt32Value();
-
+  caml_acquire_runtime_system();
   caml_callback3(*cbf_update, k, omt, nmt);
+  caml_release_runtime_system();
 }
 
 // call the OCaml function cb_coh_delete with the key just removed from the cache
 void MessageMapListener::entryDeleted(MapEvent::View vEvent) {
+  caml_acquire_runtime_system();
   caml_callback(*cbf_delete, Val_int((cast<Integer32::View>(vEvent->getKey()))->getInt32Value()));
+  caml_release_runtime_system();
 }
 
 // add a listener for the message type - see caml_coh_addmessagelistener()
