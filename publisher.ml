@@ -15,11 +15,14 @@ let b () = Random.int (Array.length bodies)
 let pad = String.make 40 'Z' (* for Tibco-style 50-byte messages *) 
 
 let () = 
+  Random.self_init ();
   let x = (match Array.length Sys.argv with |1 -> 10000|_ -> int_of_string Sys.argv.(1)) in
   let c = coh_getcache "message_cache" in
   let t1 = Unix.gettimeofday () in
   for i = 1 to x do
-    coh_put_message c {msg_id = i; msg_priority = p (); msg_subject = subjects.(s ()); msg_body = pad ^ (bodies.(b ()))}
+    let m = {msg_id = i; msg_priority = p (); msg_subject = subjects.(s ()); msg_body = pad ^ (bodies.(b ()))} in
+    coh_put_message c m;
+    print_message m
   done;
   log_message (Printf.sprintf "Sent %d messages in %.3fs" x (Unix.gettimeofday () -. t1))
 

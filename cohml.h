@@ -10,6 +10,10 @@ extern "C" {
 #include "coherence/net/NamedCache.hpp"
 #include "coherence/util/MapListener.hpp"
 #include "coherence/util/MapEvent.hpp"
+#include "coherence/net/cache/ContinuousQueryCache.hpp"
+#include "coherence/util/Filter.hpp"
+#include "coherence/util/MapListenerSupport.hpp"
+
 #include <iostream>
 #include <vector>
 
@@ -18,6 +22,9 @@ using coherence::net::CacheFactory;
 using coherence::net::NamedCache;
 using coherence::util::MapListener;
 using coherence::util::MapEvent;
+using coherence::net::cache::ContinuousQueryCache;
+using coherence::util::Filter;
+using coherence::util::MapListenerSupport;
 
 // note - to use debugging DEBUG must be set *before* #including this file
 #ifdef DEBUG
@@ -67,6 +74,8 @@ extern "C" {
 class Cohml {
 private:
   NamedCache::Handle hCache;
+  ContinuousQueryCache::Handle hCQC;
+  Filter::Handle hFil;
   String::View vsRet; // to keep the C string in scope
   std::ostringstream msg; // debug messages
 public:
@@ -79,7 +88,7 @@ public:
   Message* get_message(int k);
   // retrieve as a STL vector a list of message with a priority <= k
   std::vector<Message*>* query_message_pri(int k);
-  void addMessageListener(int f, int ft, int cont, int sti, char* stc, value* cbf_i, value* cbf_u, value* cbf_d);
+  void addMessageListener(int f, int ft, int cont, int sti, char* stc, bool exist, value* cbf_i, value* cbf_u, value* cbf_d);
   ~Cohml();
 };
 
@@ -95,8 +104,10 @@ public:
 };
 
 // as CohmlMapListener but handles the Message class rather than strings
-class MessageMapListener:public class_spec<MessageMapListener, extends<Object>, implements<MapListener> > {
+class MessageMapListener:public class_spec<MessageMapListener, extends<Object>, implements<MapListenerSupport::SynchronousListener> > {
   friend class factory<MessageMapListener>;
+ private:
+  std::ostringstream msg; // debug messages
 public:
   enum field { ID, PRIORITY, SUBJECT, BODY };
   enum field_type { INT, STRING };
