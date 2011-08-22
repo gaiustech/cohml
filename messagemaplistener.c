@@ -6,6 +6,11 @@ extern "C" {
 #include <caml/custom.h>
 #include <caml/callback.h>
 #include <caml/fail.h>
+
+#if OCAML_VERSION_MINOR >= 12
+#include <caml/threads.h>
+#define 
+#endif 
 } //extern C
 
 // basic includes
@@ -100,14 +105,22 @@ void MessageMapListener::entryInserted(MapEvent::View vEvent) {
   DEBUG_MSG("entered");
   // get the Message, allocate some OCaml storage, convert it and return that
   CAMLlocal1(mt);
+  
   mt = caml_alloc_tuple(4);
   Managed<Message>::View vm = cast<Managed<Message>::View>(vEvent->getNewValue());
   Message* m;
   m = new Message(vm->getId(), vm->getPriority(), vm->getSubject(), vm->getBody());
   message_to_tuple(m, mt);
   int k = (cast<Integer32::View>(vEvent->getKey()))->getInt32Value();
-  
+
+#if OCAML_VERSION_MINOR >= 12
+  caml_c_thread_register();
+#endif
   caml_callback2(*cbf_insert, Val_int(k), mt);
+
+#if OCAML_VERSION_MINOR >= 12
+  caml_c_thread_unregister();
+#endif
 }
 
 // call the OCaml function cbf_coh_update with the key, the previous value and the new value

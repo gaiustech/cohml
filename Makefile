@@ -5,6 +5,11 @@ CCFLAGS=-ccopt -I/usr/lib/ocaml -ccopt -I$(COH_HOME_CPP)/include -ccopt -Wall
 COBJS=message.o messagemaplistener.o messageserializer.o cohml.o
 MLOBJS=cohml.cmo log_message.cmo
 
+OCAML_VERSION_MAJOR = `ocamlopt -version | cut -f1 -d.`
+OCAML_VERSION_MINOR = `ocamlopt -version | cut -f2 -d.`
+OCAML_VERSION_POINT = `ocamlopt -version | cut -f3 -d.`
+
+
 all:	cohmlsh subscriber publisher message listener
 
 cohmlsh:	$(COBJS) $(MLOBJS) 
@@ -25,7 +30,7 @@ listener:	$(COBJS) $(MLOBJS) listener.ml
 	ocamlc -g -annot -custom -o $@ -cclib -L$(COH_HOME_CPP)/lib -cclib -lcoherence unix.cma $(MLOBJS) listener.ml $(COBJS)
 
 %.o:	%.c
-	ocamlc -ccopt -xc++ -ccopt -g3 -c -o $@ -ccopt -I$(COH_HOME_CPP)/include -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence $<
+	ocamlc -ccopt -xc++ -ccopt -g3 -c -o $@ -ccopt -I$(COH_HOME_CPP)/include -ccopt -L$(COH_HOME_CPP)/lib -ccopt -lcoherence -ccopt -DOCAML_VERSION_MINOR=$(OCAML_VERSION_MINOR) $<
 
 %.cmo: %.ml
 	ocamlc -c -g -annot unix.cma $<
