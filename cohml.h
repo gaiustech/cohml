@@ -115,6 +115,7 @@ public:
   value* cbf_insert;
   value* cbf_update;
   value* cbf_delete;
+  ContinuousQueryCache::Handle hCQC;
   virtual void entryInserted(MapEvent::View vEvent);
   virtual void entryUpdated(MapEvent::View vEvent);
   virtual void entryDeleted(MapEvent::View vEvent);

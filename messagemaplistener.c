@@ -47,7 +47,7 @@ extern "C" {
 #include <cstdlib>
 
 // NOTE: if DEBUG is required, it must be #defined *before* cohml.h is #included
-//#define DEBUG
+#define DEBUG
 #include "cohml.h"
 
 using std::endl;
@@ -109,7 +109,7 @@ extern "C" {
 
 // call the OCaml callback function with an int and a 4-tuple from message_to_tuple
 void MessageMapListener::entryInserted(MapEvent::View vEvent) {
-  DEBUG_MSG("entered");
+  DEBUG_MSG("entered, cache state=" << hCQC->getState() << " active=" << hCQC->isActive());
   // get the Message, allocate some OCaml storage, convert it and return that
   CAMLlocal1(mt);
   
@@ -227,7 +227,6 @@ void Cohml::addMessageListener(int f, int ft, int cond, int sti, char* stc, bool
 
   // existing records in the cache will be processed using the insert callback
   // (or should they be discarded? a philosophical question)
-  DEBUG_MSG("exist="<<exist);
   if (exist) {
       hCQC = ContinuousQueryCache::create(hCache, hFil, false, mml);
   } else {
@@ -237,7 +236,14 @@ void Cohml::addMessageListener(int f, int ft, int cond, int sti, char* stc, bool
     hCQC->clear();
     hCQC->addFilterListener(mml);
   }
+
+  mml->hCQC = hCQC;
   
+  hCQC->setReconnectInterval(20); // milliseconds
+  DEBUG_MSG("reconnect interval=" << hCQC->getReconnectInterval() << "ms");
+
+  hCQC->setCacheValues(false);
+  DEBUG_MSG("local cache=" << hCQC->isCacheValues());
   DEBUG_MSG("CQ listening");
 }
 

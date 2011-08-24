@@ -1,5 +1,6 @@
 (* .ocamlinit for COH*ML *)
 
 open Cohml
+open Log_message
 
 (* end of file *)
